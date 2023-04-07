@@ -13,7 +13,7 @@ RUN go mod download
 # Build the program
 RUN go build -o main .
 
-FROM arm64v8/golang:1.20-alpine
+FROM arm64v8/alpine
 COPY --from=builder /app/main /main
 COPY --from=builder /app/app.env /app.env
 
