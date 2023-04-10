@@ -28,7 +28,7 @@ func (rc RestaurantController) Create(c *gin.Context) {
 	var restaurant model.Restaurant
 	err := c.ShouldBindJSON(&restaurant)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"Message": "error binding request body"})
+		c.JSON(http.StatusBadRequest, gin.H{"Message": "error binding request body"})
 		return
 	}
 
@@ -63,7 +63,7 @@ func (rc RestaurantController) Read(c *gin.Context) {
 
 	// Validate input
 	if restaurantId == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{"Message": "restaurantId is empty"})
+		c.JSON(http.StatusBadRequest, gin.H{"Message": "restaurantId is empty"})
 		return
 	}
 
@@ -87,12 +87,12 @@ func (rc RestaurantController) Update(c *gin.Context) {
 	var restaurant model.Restaurant
 	err := c.ShouldBindJSON(&restaurant)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"Message": "error binding request body"})
+		c.JSON(http.StatusBadRequest, gin.H{"Message": "error binding request body"})
 		return
 	}
 
 	if restaurant.Id == nil || restaurantId != *restaurant.Id {
-		c.JSON(http.StatusInternalServerError, gin.H{"Message": "restaurantId in URL path parameters and restaurant in body do not match"})
+		c.JSON(http.StatusBadRequest, gin.H{"Message": "restaurantId in URL path parameters and restaurant in body do not match"})
 		return
 	}
 
@@ -121,13 +121,13 @@ func (rc RestaurantController) Update(c *gin.Context) {
 func (rc RestaurantController) Delete(c *gin.Context) {
 	restaurantId := c.Param("restaurantId")
 
-	log.Printf("RestaurantController.Delete restaurantId: %s\n", restaurantId)
-
 	// Validate input
 	if restaurantId == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{"Message": "restaurantId is empty"})
+		c.JSON(http.StatusBadRequest, gin.H{"Message": "restaurantId is empty"})
 		return
 	}
+
+	log.Printf("RestaurantController.Delete restaurantId: %s\n", restaurantId)
 
 	err := rc.Restaurant.Delete(restaurantId)
 	if err != nil {
