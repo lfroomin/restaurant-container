@@ -33,6 +33,7 @@ func Test_Create(t *testing.T) {
 	restaurantNoAddressExp, _ := json.Marshal(model.Restaurant{
 		Name: restName,
 	})
+
 	testCases := []struct {
 		name         string
 		restaurant   model.Restaurant
@@ -41,49 +42,45 @@ func Test_Create(t *testing.T) {
 		responseBody string
 		stubError    stubError
 	}{
-		{"happy path",
-			model.Restaurant{
+		{
+			name: "happy path",
+			restaurant: model.Restaurant{
 				Name:    restName,
 				Address: &model.Address{},
 			},
-			false,
-
-			http.StatusCreated,
-			string(restaurantExp),
-			stubError{},
+			responseCode: http.StatusCreated,
+			responseBody: string(restaurantExp),
 		},
-		{"no address",
-			model.Restaurant{
+		{
+			name: "no address",
+			restaurant: model.Restaurant{
 				Name: restName,
 			},
-			false,
-			http.StatusCreated,
-			string(restaurantNoAddressExp),
-			stubError{},
+			responseCode: http.StatusCreated,
+			responseBody: string(restaurantNoAddressExp),
 		},
-		{"storage error",
-			model.Restaurant{},
-			false,
-			http.StatusInternalServerError,
-			`{"Message":"an error occurred"}`,
-			stubError{restaurant: "an error occurred"},
+		{
+			name:         "storage error",
+			restaurant:   model.Restaurant{},
+			responseCode: http.StatusInternalServerError,
+			responseBody: `{"Message":"an error occurred"}`,
+			stubError:    stubError{restaurant: "an error occurred"},
 		},
-		{"location error",
-			model.Restaurant{
+		{
+			name: "location error",
+			restaurant: model.Restaurant{
 				Name:    restName,
 				Address: &model.Address{},
 			},
-			false,
-			http.StatusInternalServerError,
-			`{"Message":"an error occurred"}`,
-			stubError{location: "an error occurred"},
+			responseCode: http.StatusInternalServerError,
+			responseBody: `{"Message":"an error occurred"}`,
+			stubError:    stubError{location: "an error occurred"},
 		},
-		{"empty request body",
-			model.Restaurant{},
-			true,
-			http.StatusBadRequest,
-			`{"Message":"error binding request body"}`,
-			stubError{},
+		{
+			name:         "empty request body",
+			emptyReqBody: true,
+			responseCode: http.StatusBadRequest,
+			responseBody: `{"Message":"error binding request body"}`,
 		},
 	}
 
@@ -135,41 +132,38 @@ func Test_Create(t *testing.T) {
 
 func Test_Read(t *testing.T) {
 	t.Parallel()
+
 	testCases := []struct {
 		name         string
 		restaurantId string
-		exists       bool
+		notExist     bool
 		responseCode int
 		responseBody string
 		stubError    string
 	}{
-		{"happy path",
-			"restId",
-			true,
-			http.StatusOK,
-			`{"name":""}`,
-			"",
+		{
+			name:         "happy path",
+			restaurantId: "restId",
+			responseCode: http.StatusOK,
+			responseBody: `{"name":""}`,
 		},
-		{"empty restaurantId",
-			"",
-			true,
-			http.StatusBadRequest,
-			`{"Message":"restaurantId is empty"}`,
-			"",
+		{
+			name:         "empty restaurantId",
+			responseCode: http.StatusBadRequest,
+			responseBody: `{"Message":"restaurantId is empty"}`,
 		},
-		{"storage error",
-			"restId",
-			true,
-			http.StatusInternalServerError,
-			`{"Message":"an error occurred"}`,
-			"an error occurred",
+		{
+			name:         "storage error",
+			restaurantId: "restId",
+			responseCode: http.StatusInternalServerError,
+			responseBody: `{"Message":"an error occurred"}`,
+			stubError:    "an error occurred",
 		},
-		{"restaurant does not exist",
-			"restId",
-			false,
-			http.StatusNotFound,
-			"",
-			"",
+		{
+			name:         "restaurant does not exist",
+			restaurantId: "restId",
+			notExist:     true,
+			responseCode: http.StatusNotFound,
 		},
 	}
 
@@ -179,7 +173,7 @@ func Test_Read(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			rc := RestaurantController{
-				Restaurant: restaurantStorerStub{exists: tc.exists, error: tc.stubError},
+				Restaurant: restaurantStorerStub{notExist: tc.notExist, error: tc.stubError},
 			}
 
 			w := httptest.NewRecorder()
@@ -224,78 +218,71 @@ func Test_Update(t *testing.T) {
 		responseBody string
 		stubError    stubError
 	}{
-		{"happy path",
-			restId,
-			model.Restaurant{
+		{
+			name:         "happy path",
+			restaurantId: restId,
+			restaurant: model.Restaurant{
 				Id:      &restId,
 				Name:    restName,
 				Address: &model.Address{},
 			},
-			false,
-
-			http.StatusOK,
-			string(restaurantExp),
-			stubError{},
+			responseCode: http.StatusOK,
+			responseBody: string(restaurantExp),
 		},
-		{"no address",
-			restId,
-			model.Restaurant{
+		{
+			name:         "no address",
+			restaurantId: restId,
+			restaurant: model.Restaurant{
 				Id:   &restId,
 				Name: restName,
 			},
-			false,
-			http.StatusOK,
-			string(restaurantNoAddressExp),
-			stubError{},
+			responseCode: http.StatusOK,
+			responseBody: string(restaurantNoAddressExp),
 		},
-		{"restaurantId is nil",
-			restId,
-			model.Restaurant{
+		{
+			name:         "restaurantId is nil",
+			restaurantId: restId,
+			restaurant: model.Restaurant{
 				Name: restName,
 			},
-			false,
-			http.StatusBadRequest,
-			`{"Message":"restaurantId in URL path parameters and restaurant in body do not match"}`,
-			stubError{},
+			responseCode: http.StatusBadRequest,
+			responseBody: `{"Message":"restaurantId in URL path parameters and restaurant in body do not match"}`,
 		},
-		{"mismatch restaurantId",
-			"differentRestId",
-			model.Restaurant{
+		{
+			name:         "mismatch restaurantId",
+			restaurantId: "differentRestId",
+			restaurant: model.Restaurant{
 				Id:   &restId,
 				Name: restName,
 			},
-			false,
-			http.StatusBadRequest,
-			`{"Message":"restaurantId in URL path parameters and restaurant in body do not match"}`,
-			stubError{},
+			responseCode: http.StatusBadRequest,
+			responseBody: `{"Message":"restaurantId in URL path parameters and restaurant in body do not match"}`,
 		},
-		{"storage error",
-			restId,
-			model.Restaurant{Id: &restId},
-			false,
-			http.StatusInternalServerError,
-			`{"Message":"an error occurred"}`,
-			stubError{restaurant: "an error occurred"},
+		{
+			name:         "storage error",
+			restaurantId: restId,
+			restaurant:   model.Restaurant{Id: &restId},
+			responseCode: http.StatusInternalServerError,
+			responseBody: `{"Message":"an error occurred"}`,
+			stubError:    stubError{restaurant: "an error occurred"},
 		},
-		{"location error",
-			restId,
-			model.Restaurant{
+		{
+			name:         "location error",
+			restaurantId: restId,
+			restaurant: model.Restaurant{
 				Id:      &restId,
 				Name:    restName,
 				Address: &model.Address{},
 			},
-			false,
-			http.StatusInternalServerError,
-			`{"Message":"an error occurred"}`,
-			stubError{location: "an error occurred"},
+			responseCode: http.StatusInternalServerError,
+			responseBody: `{"Message":"an error occurred"}`,
+			stubError:    stubError{location: "an error occurred"},
 		},
-		{"empty request body",
-			"",
-			model.Restaurant{},
-			true,
-			http.StatusBadRequest,
-			`{"Message":"error binding request body"}`,
-			stubError{},
+		{
+			name:         "empty request body",
+			emptyReqBody: true,
+			responseCode: http.StatusBadRequest,
+			responseBody: `{"Message":"error binding request body"}`,
 		},
 	}
 
@@ -332,6 +319,7 @@ func Test_Update(t *testing.T) {
 
 func Test_Delete(t *testing.T) {
 	t.Parallel()
+
 	testCases := []struct {
 		name         string
 		restaurantId string
@@ -339,23 +327,23 @@ func Test_Delete(t *testing.T) {
 		responseBody string
 		stubError    string
 	}{
-		{"happy path",
-			"restId",
-			http.StatusOK,
-			`""`,
-			"",
+		{
+			name:         "happy path",
+			restaurantId: "restId",
+			responseCode: http.StatusOK,
+			responseBody: `""`,
 		},
-		{"empty restaurantId",
-			"",
-			http.StatusBadRequest,
-			`{"Message":"restaurantId is empty"}`,
-			"",
+		{
+			name:         "empty restaurantId",
+			responseCode: http.StatusBadRequest,
+			responseBody: `{"Message":"restaurantId is empty"}`,
 		},
-		{"storage error",
-			"restId",
-			http.StatusInternalServerError,
-			`{"Message":"an error occurred"}`,
-			"an error occurred",
+		{
+			name:         "storage error",
+			restaurantId: "restId",
+			responseCode: http.StatusInternalServerError,
+			responseBody: `{"Message":"an error occurred"}`,
+			stubError:    "an error occurred",
 		},
 	}
 
@@ -382,8 +370,8 @@ func Test_Delete(t *testing.T) {
 }
 
 type restaurantStorerStub struct {
-	exists bool
-	error  string
+	notExist bool
+	error    string
 }
 
 func (s restaurantStorerStub) Save(_ model.Restaurant) error {
@@ -397,7 +385,7 @@ func (s restaurantStorerStub) Get(_ string) (model.Restaurant, bool, error) {
 	if s.error != "" {
 		return model.Restaurant{}, false, errors.New(s.error)
 	}
-	if !s.exists {
+	if s.notExist {
 		return model.Restaurant{}, false, nil
 	}
 	return model.Restaurant{}, true, nil
