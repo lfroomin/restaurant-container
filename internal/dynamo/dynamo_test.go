@@ -11,6 +11,7 @@ import (
 )
 
 func Test_Save(t *testing.T) {
+	t.Parallel()
 	restId := "restId"
 	testCases := []struct {
 		name       string
@@ -51,6 +52,7 @@ func Test_Save(t *testing.T) {
 }
 
 func Test_Get(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name      string
 		restId    string
@@ -99,6 +101,7 @@ func Test_Get(t *testing.T) {
 }
 
 func Test_Update(t *testing.T) {
+	t.Parallel()
 	restId := "restId"
 	testCases := []struct {
 		name       string
@@ -139,6 +142,7 @@ func Test_Update(t *testing.T) {
 }
 
 func Test_Delete(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name      string
 		restId    string
