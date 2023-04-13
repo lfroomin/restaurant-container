@@ -26,6 +26,18 @@ deps:
 test:
 	@go test ./...
 
+.PHONY: docker-build
+## test: Build the Docker image
+docker-build:
+	@docker build --tag restaurant-container:alpha .
+
+.PHONY: docker-run
+## test: Run the Docker container
+docker-run:
+	@docker run --rm -p 8080:8080 --name restaurant-container -e AWS_REGION=us-west-2 \
+     -v ~/.aws/credentials:/root/.aws/credentials:ro restaurant-container:alpha
+
+
 .PHONY: help
 all: help
 # help: show this help message
