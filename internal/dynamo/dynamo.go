@@ -33,6 +33,13 @@ type restaurantItem struct {
 	Updated      int64
 }
 
+func New(cfg aws.Config, table string) RestaurantStorage {
+	return RestaurantStorage{
+		Client: dynamodb.NewFromConfig(cfg),
+		Table:  table,
+	}
+}
+
 func (rs RestaurantStorage) Save(restaurant model.Restaurant) error {
 	log.Printf("RestaurantStorage.Save restaurantId: %s\n", *restaurant.Id)
 
