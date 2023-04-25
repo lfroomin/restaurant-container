@@ -19,12 +19,12 @@ type Geocoder interface {
 	Geocode(address model.Address) (model.Location, string, error)
 }
 
-type RestaurantController struct {
+type Restaurant struct {
 	Restaurant RestaurantStorer
 	Location   Geocoder
 }
 
-func (rc RestaurantController) Create(c *gin.Context) {
+func (r Restaurant) Create(c *gin.Context) {
 	var restaurant model.Restaurant
 	err := c.ShouldBindJSON(&restaurant)
 	if err != nil {
@@ -34,11 +34,11 @@ func (rc RestaurantController) Create(c *gin.Context) {
 
 	id := uuid.NewString()
 	restaurant.Id = &id
-	log.Printf("RestaurantController.Create restaurantName: %s  restaurantId: %s\n", restaurant.Name, *restaurant.Id)
+	log.Printf("Restaurant.Create restaurantName: %s  restaurantId: %s\n", restaurant.Name, *restaurant.Id)
 
 	// Get the geocode of the restaurant address
 	if restaurant.Address != nil {
-		location, timezoneName, err := rc.Location.Geocode(*restaurant.Address)
+		location, timezoneName, err := r.Location.Geocode(*restaurant.Address)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"Message": err.Error()})
 			return
@@ -48,7 +48,7 @@ func (rc RestaurantController) Create(c *gin.Context) {
 		restaurant.Address.TimezoneName = &timezoneName
 	}
 
-	if err := rc.Restaurant.Save(restaurant); err != nil {
+	if err := r.Restaurant.Save(restaurant); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Message": err.Error()})
 		return
 	}
@@ -56,10 +56,10 @@ func (rc RestaurantController) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, restaurant)
 }
 
-func (rc RestaurantController) Read(c *gin.Context) {
+func (r Restaurant) Read(c *gin.Context) {
 	restaurantId := c.Param("restaurantId")
 
-	log.Printf("RestaurantController.Read restaurantId: %s\n", restaurantId)
+	log.Printf("Restaurant.Read restaurantId: %s\n", restaurantId)
 
 	// Validate input
 	if restaurantId == "" {
@@ -67,7 +67,7 @@ func (rc RestaurantController) Read(c *gin.Context) {
 		return
 	}
 
-	restaurant, exists, err := rc.Restaurant.Get(restaurantId)
+	restaurant, exists, err := r.Restaurant.Get(restaurantId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Message": err.Error()})
 		return
@@ -81,7 +81,7 @@ func (rc RestaurantController) Read(c *gin.Context) {
 	c.JSON(http.StatusOK, restaurant)
 }
 
-func (rc RestaurantController) Update(c *gin.Context) {
+func (r Restaurant) Update(c *gin.Context) {
 	restaurantId := c.Param("restaurantId")
 
 	var restaurant model.Restaurant
@@ -96,11 +96,11 @@ func (rc RestaurantController) Update(c *gin.Context) {
 		return
 	}
 
-	log.Printf("RestaurantController.Update restaurantName: %s  restaurantId: %s\n", restaurant.Name, *restaurant.Id)
+	log.Printf("Restaurant.Update restaurantName: %s  restaurantId: %s\n", restaurant.Name, *restaurant.Id)
 
 	// Get the geocode of the restaurant address
 	if restaurant.Address != nil {
-		location, timezoneName, err := rc.Location.Geocode(*restaurant.Address)
+		location, timezoneName, err := r.Location.Geocode(*restaurant.Address)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"Message": err.Error()})
 			return
@@ -110,7 +110,7 @@ func (rc RestaurantController) Update(c *gin.Context) {
 		restaurant.Address.TimezoneName = &timezoneName
 	}
 
-	if err := rc.Restaurant.Update(restaurant); err != nil {
+	if err := r.Restaurant.Update(restaurant); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Message": err.Error()})
 		return
 	}
@@ -118,7 +118,7 @@ func (rc RestaurantController) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, restaurant)
 }
 
-func (rc RestaurantController) Delete(c *gin.Context) {
+func (r Restaurant) Delete(c *gin.Context) {
 	restaurantId := c.Param("restaurantId")
 
 	// Validate input
@@ -127,9 +127,9 @@ func (rc RestaurantController) Delete(c *gin.Context) {
 		return
 	}
 
-	log.Printf("RestaurantController.Delete restaurantId: %s\n", restaurantId)
+	log.Printf("Restaurant.Delete restaurantId: %s\n", restaurantId)
 
-	err := rc.Restaurant.Delete(restaurantId)
+	err := r.Restaurant.Delete(restaurantId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Message": err.Error()})
 		return

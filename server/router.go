@@ -20,7 +20,7 @@ func NewRouter(env Env) *gin.Engine {
 
 	router.Use(logRequest)
 
-	restaurant := controllers.RestaurantController{
+	restaurant := controllers.Restaurant{
 		Restaurant: env.Restaurant,
 		Location:   env.Location,
 	}

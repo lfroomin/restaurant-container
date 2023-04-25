@@ -89,7 +89,7 @@ func Test_Create(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			rc := RestaurantController{
+			rc := Restaurant{
 				Restaurant: restaurantStorerStub{error: tc.stubError.restaurant},
 				Location:   locationServiceStub{error: tc.stubError.location},
 			}
@@ -172,7 +172,7 @@ func Test_Read(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			rc := RestaurantController{
+			rc := Restaurant{
 				Restaurant: restaurantStorerStub{notExist: tc.notExist, error: tc.stubError},
 			}
 
@@ -291,7 +291,7 @@ func Test_Update(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			rc := RestaurantController{
+			rc := Restaurant{
 				Restaurant: restaurantStorerStub{error: tc.stubError.restaurant},
 				Location:   locationServiceStub{error: tc.stubError.location},
 			}
@@ -352,7 +352,7 @@ func Test_Delete(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			rc := RestaurantController{
+			rc := Restaurant{
 				Restaurant: restaurantStorerStub{error: tc.stubError},
 			}
 
